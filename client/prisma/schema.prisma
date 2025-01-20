@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String? 
+  email String? @unique // question mark makes it optional
+  emailVerified DateTime?
+  image String?
+  hashedPassword String?
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt
+
+  acccounts Account[]
+  locations Location[]
+}
+
+model Account {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  provider String
+  providerAccountId String
+  refresh_token String? @db.String
+  access_token String? @db.String
+  expires_at Int?
+  token_type String?
+  scope String?
+  id_token String? @db.String 
+  session_state String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Location {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  description String
+  cityDetails String
+  locationId String @db.ObjectId @ unique 
+  coordinates Float[] 
+  visitedOn DateTime
+
+  userId String @db.ObjectId
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  photos Photo[] 
+}
+
+model Photo {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  url String
+  uploadedAt DateTime @default(now())
+
+  locationId String @db.ObjectId
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+}
