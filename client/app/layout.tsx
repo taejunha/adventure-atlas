@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import Navbar from "@/components/Navbar";
+import Provider from "@/app/providers/SessionProvider";
 import Footer from "@/components/Footer";
 import '@/styles/globals.css';
 import ClientOnly from "@/components/ClientOnly";
 import Login from "@/components/MapComponent";
-import Hero from "@/app/hero/Hero";
 import getCurrentUser from "@/services/getCurrentUser";
 
 const font = Nunito({
@@ -17,19 +17,15 @@ export const metadata: Metadata = {
   description: "New journaling app",
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function RootLayout({children,}: Readonly<{children: React.ReactNode}>) {
   const currentUser = await getCurrentUser();
 
   return (
     <html lang="en">
       <body className={font.className}>
-        <ClientOnly>
-          <Navbar /> 
-        </ClientOnly>
+        <Provider>
+          <Navbar currentUser={currentUser} /> 
+        </Provider>
         {children}
         <Footer />
       </body>

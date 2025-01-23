@@ -1,10 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
+import getCurrentUser from "@/services/getCurrentUser";
+import { SafeUser } from "@/app/types/";
 
-export default function Navbar() {
+interface NavbarProps {
+  currentUser?: SafeUser | null;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
   const [open, setOpen] = useState<boolean>(false); // State to manage mobile menu
 
   return (
@@ -27,7 +33,11 @@ export default function Navbar() {
                 <Link href="/contact">Contact</Link>
               </li>
               <li className="hover:text-white">
-                <Link href="/login">Sign In</Link>
+                {currentUser ? (
+                  <Link href="/login">Sign Out</Link>
+                ):(
+                  <Link href="/login">Sign In</Link>
+                )}
               </li>
               <li className="hover:text-white">
                 <Link href="/map">Map</Link>
@@ -59,14 +69,16 @@ export default function Navbar() {
                 Contact
               </Link>
             </li>
-            <li className="hover:text-white">
-              <Link href="/signin" onClick={() => setOpen(false)}>
-                Sign In
-              </Link>
-            </li>
+            {/* <li className="hover:text-white"> */}
+              {/* <Link href="/signin" onClick={() => setOpen(false)}> */}
+                {/* Sign In */}
+              {/* </Link> */}
+            {/* </li> */}
           </ul>
         </div>
       )}
     </>
   );
 };
+
+export default Navbar; 

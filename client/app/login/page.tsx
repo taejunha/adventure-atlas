@@ -36,8 +36,9 @@ export default function Login() {
       if (callback?.ok) {
         toast.success("You have successfully logged in.");
         router.refresh(); 
-        router.push('/');
+        router.push('/map');
       } else if (callback?.error) {
+        console.log("Incorrect username/password")
         toast.error(callback.error);
     }
     });
