@@ -1,6 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import axios from "axios";
 import { SafeUser } from "@/app/types";
 
 interface Location {
@@ -8,47 +13,32 @@ interface Location {
   name: string;
   description: string;
   cityDetails: string;
+  visitedOn: string;
   coordinates: [number, number];
 }
 
 interface LocationManagerProps {
   currentUser: SafeUser | null;
-  onLocationsChange: (locations: Location[]) => void;
+  // onLocationsChange: (locations: Location[]) => void;
 }
 
-const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, onLocationsChange }) => {
+const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
+  // console.log(currentUser); // for testing purposes
+  const [startDate, setStartDate] = useState(new Date());
   const [locations, setLocations] = useState<Location[]>([]);
-  const [user, setUser] = useState< { userId: string } | null>(null);
   const [newLocation, setNewLocation] = useState<Location>({
     id: '',
     name: '',
     description: '',
     cityDetails: '',
+    visitedOn: '',
     coordinates: [0, 0],
   });
 
-  useEffect(() => {
-    const getUserData = async() => {
-        try {
-            const response = await fetch('/app/api/currentUser');
-            console.log(response); 
-            if (!response.ok) {
-                throw new Error("Error fetching user")
-            }
-            const userData = await response.json();
-            setUser(userData);
-        } catch(error) {
-            console.error("Error fetching data", error);
-        }
-    };
-    getUserData(); 
-  }, []);
-
-  console.log(user?.userId || currentUser?.id);
-
+  // handles adding locations to the database
   const handleAddLocation = async () => {
     try {
-        const response = await fetch('services/addLocation', {
+        const response = await fetch('/api/addLocation', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -67,7 +57,6 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, onLocati
         const addedLocation = await response.json();
         const updatedLocations = [...locations, addedLocation];
         setLocations(updatedLocations);
-        onLocationsChange(updatedLocations); 
     } catch (error) {
         console.error("Error adding location")
     }
@@ -75,6 +64,9 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, onLocati
 
   return (
     <div className="p-4">
+      <h1 className="text-2xl">Welcome <span className="font-bold">{currentUser?.name}</span>!</h1>
+      
+      <br></br>
       <h2 className="text-xl font-bold mb-4">Manage Locations</h2>
       <div className="space-y-2">
         {locations.map((location) => (
@@ -128,6 +120,12 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, onLocati
           placeholder="Tell us what you did here!"
           className="border rounded px-2 py-1 w-full overflow-y-scroll">
         </textarea>
+
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DemoContainer components={['DateTimePicker']}>
+            <DateTimePicker label="When did you visit?" views={['year', 'month', 'day']}/>
+          </DemoContainer>
+        </LocalizationProvider>
 
         <input
           type="number"

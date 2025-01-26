@@ -1,6 +1,11 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
+import { SafeUser } from "@/app/types";
+
+interface MapComponentProps {
+  currentUser: SafeUser | null; 
+}
 
 interface Location {
   id: string;

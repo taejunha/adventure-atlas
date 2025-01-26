@@ -42,7 +42,7 @@ export default function Signup() {
         } else {
         toast.error("Oopsies. Cleanup on aisle 404!");
         }
-        })
+      })
       .finally(() => {
         setIsLoading(false);
         });
