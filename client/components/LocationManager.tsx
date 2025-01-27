@@ -5,6 +5,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import dayjs from "dayjs";
 import axios from "axios";
 import { SafeUser } from "@/app/types";
 
@@ -24,7 +25,6 @@ interface LocationManagerProps {
 
 const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
   // console.log(currentUser); // for testing purposes
-  const [startDate, setStartDate] = useState(new Date());
   const [locations, setLocations] = useState<Location[]>([]);
   const [newLocation, setNewLocation] = useState<Location>({
     id: '',
@@ -36,7 +36,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
   });
 
   // handles adding locations to the database
-  const handleAddLocation = async () => {
+  const handleAddLocation = async (e: React.FormEvent) => {
     try {
         const response = await fetch('/api/addLocation', {
             method: 'POST',
@@ -47,18 +47,20 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
                 name: newLocation.name,
                 description: newLocation.description,
                 cityDetails: newLocation.cityDetails,
+                visitedOn: newLocation.visitedOn,
+                coordinates: newLocation.coordinates,
                 userId: currentUser?.id,
             }),
         });
         if (!response.ok) {
             const errorData = await response.json();
+            console.log(errorData);
             throw new Error(errorData.error); 
         }
         const addedLocation = await response.json();
-        const updatedLocations = [...locations, addedLocation];
-        setLocations(updatedLocations);
+        setLocations((prevLocations) => [...prevLocations, addedLocation]);
     } catch (error) {
-        console.error("Error adding location")
+        console.error("Error adding location", error)
     }
   };
 
@@ -118,12 +120,29 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
         <textarea
           rows={5}
           placeholder="Tell us what you did here!"
+          value={newLocation.cityDetails}
+          onChange={(e) =>
+            setNewLocation((prev) => ({
+              ...prev,
+             cityDetails: e.target.value,
+            }))
+          }
           className="border rounded px-2 py-1 w-full overflow-y-scroll">
         </textarea>
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DemoContainer components={['DateTimePicker']}>
-            <DateTimePicker label="When did you visit?" views={['year', 'month', 'day']}/>
+            <DateTimePicker 
+              label="When did you visit?" 
+              views={['year', 'month', 'day']}
+              value={newLocation.visitedOn ? dayjs(newLocation.visitedOn) : null}
+              onChange={(date) => 
+                setNewLocation((prev) => ({
+                  ...prev,
+                  visitedOn: date ? date.toISOString() : "",
+                }))
+               }
+              />
           </DemoContainer>
         </LocalizationProvider>
 
@@ -153,7 +172,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
         />
         <p>Upload photos (optional)</p>
         <button
-          onClick={handleAddLocation}
+          type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Add Location
