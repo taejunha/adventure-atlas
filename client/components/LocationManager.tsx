@@ -6,7 +6,6 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from "dayjs";
-import axios from "axios";
 import { SafeUser } from "@/app/types";
 
 interface Location {
@@ -16,14 +15,16 @@ interface Location {
   cityDetails: string;
   visitedOn: string;
   coordinates: [number, number];
+  photos: string[];
 }
 
 interface LocationManagerProps {
   currentUser: SafeUser | null;
   // onLocationsChange: (locations: Location[]) => void;
+  newLocationCoords: [number, number] | null;
 }
 
-const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
+const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocationCoords }) => {
   // console.log(currentUser); // for testing purposes
   const [locations, setLocations] = useState<Location[]>([]);
   const [newLocation, setNewLocation] = useState<Location>({
@@ -33,7 +34,17 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser }) => {
     cityDetails: '',
     visitedOn: '',
     coordinates: [0, 0],
+    photos: [],
   });
+
+  useEffect(() => {
+    if (newLocationCoords) {
+      setNewLocation((prev) => ({
+        ...prev,
+        coordinates: newLocationCoords,
+      }));
+    }
+  }, [newLocationCoords]);
 
   // handles adding locations to the database
   const handleAddLocation = async (e: React.FormEvent) => {

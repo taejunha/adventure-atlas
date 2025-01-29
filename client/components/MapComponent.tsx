@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { SafeUser } from "@/app/types";
+import { GoogleAnalyticsConnectorOperator } from 'aws-sdk/clients/appflow';
 
 interface MapComponentProps {
   currentUser: SafeUser | null; 
@@ -16,7 +17,12 @@ interface Location {
   coordinates: [number, number]; // Lat, Lng
 }
 
-export default function MapComponent() {
+interface MapComponentProps {
+  currentUser: SafeUser | null;
+  onMapClick: (coordinates: [number, number]) => void;
+}
+
+export default function MapComponent({ onMapClick }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,12 +38,18 @@ export default function MapComponent() {
       try {
         const google = await loader.load();
 
-        const mapOptions: google.maps.MapOptions = {
+        const map = new google.maps.Map(mapRef.current, {
           center: { lat: 37.7749, lng: -122.4194 }, // Default to San Francisco
           zoom: 3,
-        };
+        });
 
-        const map = new google.maps.Map(mapRef.current, mapOptions);
+        map.addListener('click', (event: google.maps.MapMouseEvent) => {
+          if (event.latLng) {
+            const lat = event.latLng.lat();
+            const lng = event.latLng.lng();
+            onMapClick([lat, lng]);
+          }
+        })
 
         // Add markers for each location
         // locations.forEach((location) => {
@@ -67,11 +79,9 @@ export default function MapComponent() {
     };
 
     initMap();
-  }, []);
+  }, [onMapClick]);
 
   return (
-    <div ref={mapRef} className="w-full h-full">
-
-    </div>
+    <div ref={mapRef} className="w-full h-full"></div>
   );
 }
