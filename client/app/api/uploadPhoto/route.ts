@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
     for (const file of files) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const key = `${locationId}/${Date.now()}-${file.name}`;
+
+      const key = `${userId}/${locationId}/${Date.now()}-${file.name}`;
 
       const uploadParams = {
         Bucket: process.env.AWS_BUCKET_NAME!,
