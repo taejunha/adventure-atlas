@@ -50,21 +50,21 @@ model Location {
   name String
   description String
   cityDetails String
-  locationId String @db.ObjectId @ unique 
   coordinates Float[] 
   visitedOn DateTime
 
   userId String @db.ObjectId
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  photos Photo[] 
+  photos Photo[]
 }
 
 model Photo {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   url String
   uploadedAt DateTime @default(now())
-
+  key String
   locationId String @db.ObjectId
+  userId     String?  @db.ObjectId
   location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 }

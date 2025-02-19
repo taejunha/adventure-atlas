@@ -7,6 +7,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from "dayjs";
 import { SafeUser } from "@/app/types";
+import axios from 'axios';
+import { create } from 'domain';
 
 interface Location {
   id: string;
@@ -37,6 +39,19 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
     photos: [],
   });
 
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
   useEffect(() => {
     if (newLocationCoords) {
       setNewLocation((prev) => ({
@@ -49,6 +64,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
   // handles adding locations to the database
   const handleAddLocation = async (e: React.FormEvent) => {
     try {
+        e.preventDefault(); 
         const response = await fetch('/api/addLocation', {
             method: 'POST',
             headers: {
@@ -68,7 +84,30 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
             console.log(errorData);
             throw new Error(errorData.error); 
         }
+
+        // preparing the FormData for photo upload
         const addedLocation = await response.json();
+        const locationId = addedLocation.id; 
+
+        const data = new FormData();
+        selectedFiles.forEach((file) => data.append('files', file));
+        for (const [key, value] of data.entries()) {
+          console.log(key, value);
+        }
+
+
+        // upload photos to AWS
+        const uploadResponse = await axios.post(`/api/uploadPhoto?locationId=${locationId}&userId=${currentUser?.id}`, data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+        });
+
+        console.log(uploadResponse);
+
+
+        const photoUrls = uploadResponse.data.photos.map((photo: any) => photo.url);
+
         setLocations((prevLocations) => [...prevLocations, addedLocation]);
     } catch (error) {
         console.error("Error adding location", error)
@@ -181,7 +220,42 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
           }
           className="border rounded px-2 py-1"
         />
-        <p>Upload photos (optional)</p>
+        
+        {/* Upload Photos */}
+       <p className="font-bold text-xl">Upload Photos</p>
+       <div>
+          <label htmlFor="file-upload" className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Choose Photos</label>
+          <input
+            id="file-upload"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            />
+        </div>
+        <div className="mt-4">
+          <h3 className="text-lg font-bold">Selected Photos ({selectedFiles.length})</h3>
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            {selectedFiles.map((file, index) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={file.name}
+                  className="w-full h-24 object-cover rounded"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                >
+                  X
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -194,3 +268,4 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
 };
 
 export default LocationManager;
+
