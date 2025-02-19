@@ -52,6 +52,25 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
+  // fetch locations from API
+  async function fetchLocations(userId: string) {
+    try {
+      const response = await fetch(`/api/getLocation?userId=${userId}`);
+      const data = await response.json();
+      console.log(data);
+      setLocations(data);
+    } catch (error) {
+      console.error(error); 
+    }
+  }
+
+  // load existing locations when the user is available
+  useEffect(() => {
+    if (currentUser?.id) {
+      fetchLocations(currentUser.id);
+    }
+  }, [currentUser]);
+
   useEffect(() => {
     if (newLocationCoords) {
       setNewLocation((prev) => ({
@@ -95,7 +114,6 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
           console.log(key, value);
         }
 
-
         // upload photos to AWS
         const uploadResponse = await axios.post(`/api/uploadPhoto?locationId=${locationId}&userId=${currentUser?.id}`, data, {
           headers: {
@@ -104,7 +122,6 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
         });
 
         console.log(uploadResponse);
-
 
         const photoUrls = uploadResponse.data.photos.map((photo: any) => photo.url);
 
