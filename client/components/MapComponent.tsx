@@ -47,7 +47,7 @@ export default function MapComponent({ currentUser, onMapClick, locations }: Map
           }
         });
 
-        // ✅ Check if locations exist before mapping
+        // check if locations exist before mapping
         if (Array.isArray(locations) && locations.length > 0) {
           locations.forEach((location) => {
             const marker = new google.maps.Marker({
@@ -74,7 +74,7 @@ export default function MapComponent({ currentUser, onMapClick, locations }: Map
     };
   
     initMap();
-  }, [onMapClick, locations]); // ✅ Depend on `locations`
+  }, [onMapClick, locations]); 
 
   return <div ref={mapRef} className="w-full h-full"></div>;
 }
