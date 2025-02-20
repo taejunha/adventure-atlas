@@ -24,11 +24,11 @@ interface LocationManagerProps {
   currentUser: SafeUser | null;
   // onLocationsChange: (locations: Location[]) => void;
   newLocationCoords: [number, number] | null;
+  locations: Location[];
 }
 
-const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocationCoords }) => {
+const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUser, newLocationCoords }) => {
   // console.log(currentUser); // for testing purposes
-  const [locations, setLocations] = useState<Location[]>([]);
   const [newLocation, setNewLocation] = useState<Location>({
     id: '',
     name: '',
@@ -52,25 +52,6 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
-  // fetch locations from API
-  async function fetchLocations(userId: string) {
-    try {
-      const response = await fetch(`/api/getLocation?userId=${userId}`);
-      const data = await response.json();
-      console.log(data);
-      setLocations(data);
-    } catch (error) {
-      console.error(error); 
-    }
-  }
-
-  // load existing locations when the user is available
-  useEffect(() => {
-    if (currentUser?.id) {
-      fetchLocations(currentUser.id);
-    }
-  }, [currentUser]);
-
   useEffect(() => {
     if (newLocationCoords) {
       setNewLocation((prev) => ({
@@ -83,7 +64,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
   // handles adding locations to the database
   const handleAddLocation = async (e: React.FormEvent) => {
     try {
-        e.preventDefault(); 
+        // e.preventDefault(); 
         const response = await fetch('/api/addLocation', {
             method: 'POST',
             headers: {
@@ -125,7 +106,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ currentUser, newLocat
 
         const photoUrls = uploadResponse.data.photos.map((photo: any) => photo.url);
 
-        setLocations((prevLocations) => [...prevLocations, addedLocation]);
+        // setLocations((prevLocations) => [...prevLocations, addedLocation]);
     } catch (error) {
         console.error("Error adding location", error)
     }
