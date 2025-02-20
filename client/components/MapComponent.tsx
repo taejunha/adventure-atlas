@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { SafeUser } from '@/app/types';
+import { addMarkersToMap } from '@/services/markerUtils';
 
 interface Location {
   id: string;
@@ -21,6 +22,9 @@ interface MapComponentProps {
 
 export default function MapComponent({ currentUser, onMapClick, locations }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [googleApi, setGoogleApi] = useState<typeof google | null>(null);
+  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
 
   useEffect(() => {
     const initMap = async () => {
@@ -32,7 +36,9 @@ export default function MapComponent({ currentUser, onMapClick, locations }: Map
       });
   
       try {
-        const google = await loader.load();
+        await loader.load();
+        const google = window.google;
+        setGoogleApi(google);
   
         const map = new google.maps.Map(mapRef.current, {
           center: { lat: 43.7, lng: -79.4 },
@@ -46,35 +52,20 @@ export default function MapComponent({ currentUser, onMapClick, locations }: Map
             onMapClick([lat, lng]);
           }
         });
-
-        // check if locations exist before mapping
-        if (Array.isArray(locations) && locations.length > 0) {
-          locations.forEach((location) => {
-            const marker = new google.maps.Marker({
-              position: {
-                lat: location.coordinates[0],
-                lng: location.coordinates[1],
-              },
-              map,
-              title: location.name,
-            });
-  
-            const infoWindow = new google.maps.InfoWindow({
-              content: `<div><h3>${location.name}</h3><p>${location.description}</p></div>`,
-            });
-  
-            marker.addListener('click', () => {
-              infoWindow.open(map, marker);
-            });
-          });
-        }
+        setMap(map);
       } catch (error) {
         console.error('Failed to load Google Maps:', error);
       }
     };
   
     initMap();
-  }, [onMapClick, locations]); 
+  }, [onMapClick]); 
+  useEffect(() => {
+    if (map && googleApi) {
+      const newMarkers = addMarkersToMap(map, locations, googleApi);
+      setMarkers(newMarkers);
+    }
+  }, [map, locations]);
 
   return <div ref={mapRef} className="w-full h-full"></div>;
 }
