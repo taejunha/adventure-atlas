@@ -112,6 +112,20 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
     }
   };
 
+  // delete location
+  const handleDeleteLocation = async (locationId: string) => {
+    try {
+      const response = await fetch(`/api/deleteLocation?locationId=${locationId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error("Failed to delete");
+
+      window.location.reload(); 
+    } catch (error) {
+      console.error(error); 
+    }
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-2xl">Welcome <span className="font-bold">{currentUser?.name}</span>!</h1>
@@ -130,7 +144,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
                     Edit
                 </button>
                 <button
-                // onClick={() => handleDeleteLocation(location.id)}
+                onClick={() => handleDeleteLocation(location.id)}
                 className="bg-willow-brook-800 hover:bg-red-500 text-white px-2 py-1 rounded"
                 >
                 Delete
