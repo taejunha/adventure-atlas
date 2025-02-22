@@ -16,7 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
   return (
     <>
       {/* Navbar */}
-      <div className="w-full h-20 bg-willow-brook-300 shadow-md sticky top-0">
+      <div className="w-full h-20 bg-willow-brook-300 shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4 h-full">
           <div className="flex justify-between items-center h-full">
             {/* Logo */}

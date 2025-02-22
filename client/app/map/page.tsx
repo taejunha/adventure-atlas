@@ -61,7 +61,7 @@ export default function MapPage() {
       <div className="w-[1px] bg-gray-300"></div>
 
       {/* Right: Map */}
-      <div className="w-2/3">
+      <div className="w-2/3 z-1 relative overflow-y-auto">
         <MapComponent 
           locations={locations}
           currentUser={currentUser}
