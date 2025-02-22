@@ -14,6 +14,10 @@ export const addMarkersToMap = (
     google: typeof window.google
 ): google.maps.Marker[] => {
     const markers: google.maps.Marker[] = [];
+    const image = {
+      url: "./pin.png",
+      scaledSize: new google.maps.Size(30, 30)
+    }
 
     locations.forEach((location) => {
         const marker = new google.maps.Marker({
@@ -23,6 +27,8 @@ export const addMarkersToMap = (
             },
             map,
             title: location.name,
+            animation: google.maps.Animation.DROP,
+            icon: image,
         });
         const infoWindow = new google.maps.InfoWindow({
             content: `<div><h3>${location.name}</h3><p>${location.description}</p></div>`,

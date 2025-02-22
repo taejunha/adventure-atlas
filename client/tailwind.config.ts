@@ -5,7 +5,7 @@ export default {
     "./app/**/*.{js,ts,jsx,tsx,mdx}", // Next.js app directory
     "./pages/**/*.{js,ts,jsx,tsx,mdx}", // Next.js pages directory (optional if using app)
     "./components/**/*.{js,ts,jsx,tsx,mdx}", // Components
-    "./styles/**/*.{css}", // Tailwind CSS files
+    "./styles/**/*.css", // Tailwind CSS files
   ],
   theme: {
     extend: {
