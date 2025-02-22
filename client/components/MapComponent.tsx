@@ -43,6 +43,15 @@ export default function MapComponent({ currentUser, onMapClick, locations }: Map
         const map = new google.maps.Map(mapRef.current, {
           center: { lat: 43.7, lng: -79.4 },
           zoom: 3,
+          restriction: {
+            latLngBounds: {
+              north: 85.0, 
+              south: -85.0, 
+              west: -180.0, 
+              east: 180.0   
+            },
+            strictBounds: true, // prevents user from panning outside the bounds
+          },
         });
   
         map.addListener('click', (event: google.maps.MapMouseEvent) => {
@@ -67,5 +76,5 @@ export default function MapComponent({ currentUser, onMapClick, locations }: Map
     }
   }, [map, locations]);
 
-  return <div ref={mapRef} className="w-full h-full"></div>;
+  return <div ref={mapRef} className="w-full h-full absolute top-0"></div>;
 }
