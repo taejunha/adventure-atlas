@@ -4,8 +4,6 @@ import Navbar from "@/components/Navbar";
 import Provider from "@/app/providers/SessionProvider";
 import Footer from "@/components/Footer";
 import '@/styles/globals.css';
-import ClientOnly from "@/components/ClientOnly";
-import Login from "@/components/MapComponent";
 import getCurrentUser from "@/services/getCurrentUser";
 
 const font = Nunito({
