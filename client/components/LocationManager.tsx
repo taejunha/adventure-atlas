@@ -5,14 +5,17 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import dayjs from "dayjs";
 import { SafeUser } from "@/app/types";
-import axios from 'axios';
 import { Tab } from "@headlessui/react";
+import Select from 'react-select';
+import dayjs from "dayjs";
+import axios from 'axios';
+import CountrySelect, { CountrySelectValue } from './inputs/CountrySelect';
 
 interface Location {
   id: string;
   name: string;
+  country: CountrySelectValue;
   description: string;
   cityDetails: string;
   visitedOn: string;
@@ -27,11 +30,13 @@ interface LocationManagerProps {
   locations: Location[];
 }
 
+
 const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUser, newLocationCoords }) => {
   // console.log(currentUser); // for testing purposes
   const [newLocation, setNewLocation] = useState<Location>({
     id: '',
     name: '',
+    country: '',
     description: '',
     cityDetails: '',
     visitedOn: '',
@@ -40,6 +45,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
   });
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -51,6 +57,13 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
   const handleRemoveFile = (index: number) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
+
+  const setCustomValue = (key: string, value: any) => {
+    setNewLocation((prev) => ({
+      ...prev,
+      [key]: value, 
+    }));
+  };  
 
   useEffect(() => {
     if (newLocationCoords) {
@@ -64,7 +77,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
   // handles adding locations to the database
   const handleAddLocation = async (e: React.FormEvent) => {
     try {
-        // e.preventDefault(); 
+        //e.preventDefault(); 
         const response = await fetch('/api/addLocation', {
             method: 'POST',
             headers: {
@@ -72,6 +85,7 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
             },
             body: JSON.stringify({
                 name: newLocation.name,
+                country: newLocation.country?.label,
                 description: newLocation.description,
                 cityDetails: newLocation.cityDetails,
                 visitedOn: newLocation.visitedOn,
@@ -143,25 +157,77 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
           }>
             Your Locations
           </Tab>
+          <Tab className={({ selected }) =>
+            selected ? "px-4 py-2 text-white bg-blue-600 rounded-t-md" : "px-4 py-2 text-gray-600 bg-gray-200 rounded-t-md"
+          }>
+            Your Stats
+          </Tab>
         </Tab.List>
           {/* add location */}
           <Tab.Panel>
             <h3 className="mt-4 text-lg font-bold">Add New Location</h3>
             <form onSubmit={handleAddLocation} className="flex flex-col space-y-2">
               <input type="text" placeholder="Name" value={newLocation.name} onChange={(e) => setNewLocation((prev) => ({ ...prev, name: e.target.value }))} className="border rounded px-2 py-1" />
+              <div className="z-15">
+                <CountrySelect 
+                  value={newLocation.country} 
+                  onChange={(value) => setCustomValue('country', value)}
+                />
+              </div>
               <input type="text" placeholder="Short description" value={newLocation.description} onChange={(e) => setNewLocation((prev) => ({ ...prev, description: e.target.value }))} className="border rounded px-2 py-1" />
               <textarea rows={5} placeholder="Tell us what you did here!" value={newLocation.cityDetails} onChange={(e) => setNewLocation((prev) => ({ ...prev, cityDetails: e.target.value }))} className="border rounded px-2 py-1 w-full"></textarea>
 
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={['DateTimePicker']}>
-                  <DateTimePicker label="When did you visit?" value={newLocation.visitedOn ? dayjs(newLocation.visitedOn) : null} onChange={(date) => setNewLocation((prev) => ({ ...prev, visitedOn: date ? date.toISOString() : "" }))} />
+                  <DateTimePicker 
+                    label="When did you visit?" 
+                    views={['year', 'month', 'day']}
+                    value={newLocation.visitedOn ? dayjs(newLocation.visitedOn) : null}
+                    onChange={(date) => 
+                      setNewLocation((prev) => ({
+                        ...prev,
+                        visitedOn: date ? date.toISOString() : "",
+                      }))
+                    }
+                    />
                 </DemoContainer>
               </LocalizationProvider>
 
-              <p className="font-bold text-xl">Upload Photos</p>
-              <input type="file" multiple accept="image/*" onChange={handleFileChange} className="border rounded px-2 py-1" />
 
-              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Location</button>
+            <p className="font-bold text-xl">Upload Photos</p>
+            <div>
+              <label htmlFor="file-upload" className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Choose Photos</label>
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                />
+            </div>
+            <div className="mt-4">
+              <h3 className="text-lg font-bold">Selected Photos ({selectedFiles.length})</h3>
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={file.name}
+                      className="w-full h-24 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFile(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                    >
+                      X
+                    </button>
+                  </div>
+            ))}
+                </div>
+                </div>
+              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md">Add Location</button>
             </form>
           </Tab.Panel>
 
@@ -185,6 +251,17 @@ const LocationManager: React.FC<LocationManagerProps> = ({ locations, currentUse
                 </div>
               ))}
             </div>
+          </Tab.Panel>
+
+          {/* stats panel */}
+          <Tab.Panel>
+              <h1>Number of places:</h1>
+              <h1>Number of countries: </h1>
+              <h1>Country you've been to the most:</h1>
+              <h1>Year with the Most Travel</h1>
+              <h1>The last time you've been on a trip</h1>
+              <h1>Furthest Location from Home</h1>
+              <h1>First Trip Ever Logged:</h1>
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>

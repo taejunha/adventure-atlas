@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { name, description, cityDetails, visitedOn, coordinates, userId } = body;
+        const { name, description, country, cityDetails, visitedOn, coordinates, userId } = body;
         console.log("Request Body:", body); 
         // validate required fields
         // if (!name || !description || !cityDetails || !visitedOn || !userId || !locationId) {
@@ -18,6 +18,7 @@ export async function POST(request: Request) {
             data: {
                 name,
                 description,
+                country,
                 cityDetails,
                 visitedOn: new Date(visitedOn),
                 coordinates: coordinates.map(Number),
