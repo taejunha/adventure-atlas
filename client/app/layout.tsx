@@ -5,6 +5,7 @@ import Provider from "@/app/providers/SessionProvider";
 import Footer from "@/components/Footer";
 import '@/styles/globals.css';
 import getCurrentUser from "@/services/getCurrentUser";
+import LocationModal from "@/components/modals/LocationModal";
 
 const font = Nunito({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default async function RootLayout({children,}: Readonly<{children: React.
       <body className={font.className}>
         <Provider>
           <Navbar currentUser={currentUser} /> 
+          <LocationModal />
         </Provider>
         {children}
         <Footer />

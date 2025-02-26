@@ -1,10 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import getCurrentUser from "@/services/getCurrentUser";
 import { SafeUser } from "@/app/types/";
+import Categories from "./Categories";
+import useLocationModal from "@/app/hooks/useLocationModal";
 
 interface NavbarProps {
   currentUser?: SafeUser | null;
@@ -12,6 +14,11 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
   const [open, setOpen] = useState<boolean>(false); // State to manage mobile menu
+  const locationModal = useLocationModal();
+
+  const onLocation = useCallback(() => {
+    locationModal.onOpen(); 
+  }, [currentUser, locationModal])
 
   return (
     <>
@@ -40,6 +47,9 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
                 )}
               </li>
               <li className="hover:text-white">
+                <div onClick={onLocation}>Add Location</div>
+              </li>
+              <li className="hover:text-white">
                 <Link href="/map">Map</Link>
               </li>
             </ul>
@@ -54,6 +64,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
           </div>
         </div>
       </div>
+
+      < Categories />
 
       {/* Mobile Menu */}
       {open && (
